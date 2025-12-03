@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconstruction: Rebuilding Reality</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier Prime', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* CRT Monitor Effect */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            background: 
+                linear-gradient(
+                    to bottom,
+                    rgba(18, 16, 16, 0) 50%,
+                    rgba(0, 0, 0, 0.25) 50%
+                );
+            background-size: 100% 4px;
+            opacity: 0.15;
+        }
+        
+        .crt-vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 101;
+            box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7);
+        }
+        
+        /* Language Switcher */
+        .language-switcher {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(30, 30, 30, 0.8);
+            border: 1px solid #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 150;
+            transition: all 0.3s ease;
+        }
+        
+        .language-switcher:hover {
+            background-color: rgba(50, 50, 50, 0.8);
+            border-color: #0f0;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background-color: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+        
+        .system-status {
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: #0f0;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .particle-count {
+            color: #0f0;
+            margin-right: 50px; /* Space for language switcher */
+        }
+        
+        /* Main Canvas */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #particleCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Bottom Panel */
+        .bottom-panel {
+            background-color: rgba(10, 10, 10, 0.8);
+            border-top: 1px solid #333;
+            padding: 20px;
+            z-index: 50;
+        }
+        
+        .artifact-info {
+            margin-bottom: 15px;
+        }
+        
+        .artifact-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .artifact-description {
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #aaa;
+        }
+        
+        /* Final Chapter Text */
+        .final-chapter-text {
+            position: fixed;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            max-width: 90%;
+            z-index: 60;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            padding: 20px;
+        }
+        
+        .final-chapter-title {
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #fff;
+            line-height: 1.4;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .final-chapter-description {
+            font-size: clamp(1.1em, 3vw, 1.4em);
+            line-height: 1.8;
+            color: #e0e0e0;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 0 0 10px rgba(224, 224, 224, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #444;
+        }
+        
+        .progress-dot.active {
+            background-color: #0f0;
+        }
+        
+        .control-button {
+            background-color: #222;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 8px 20px;
+            font-family: 'Courier Prime', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+        
+        .control-button:hover {
+            background-color: #333;
+            border-color: #0f0;
+            color: #0f0;
+        }
+        
+        .control-button:active {
+            transform: scale(0.98);
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000005;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            transition: opacity 1s ease;
+            overflow: hidden;
+        }
+        
+        /* Digital noise background effect */
+        .loading-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.1;
+            animation: noiseAnimation 8s infinite linear alternate-reverse;
+            pointer-events: none;
+        }
+        
+        @keyframes noiseAnimation {
+            0% { transform: translateX(-10%) translateY(-10%) scale(1.2); }
+            100% { transform: translateX(10%) translateY(10%) scale(1.2); }
+        }
+        
+        /* Floating particles */
+        .loading-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .loading-particle {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            background-color: rgba(0, 255, 100, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) translateX(10px); opacity: 0; }
+        }
+        
+        .loading-title {
+            font-size: clamp(1.8em, 5vw, 3em);
+            margin-bottom: 40px;
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(0, 255, 100, 0.5);
+            letter-spacing: 1px;
+            font-weight: 400;
+            z-index: 10;
+        }
+        
+        .loading-bar-container {
+            width: clamp(250px, 50vw, 500px);
+            height: 4px;
+            background-color: rgba(0, 50, 20, 0.5);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            overflow: hidden;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0, 255, 100, 0.2);
+            z-index: 10;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, rgba(0, 200, 80, 0.8), rgba(0, 255, 120, 1), rgba(0, 200, 80, 0.8));
+            background-size: 200% 100%;
+            animation: gradientFlow 2s infinite linear;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-size: clamp(0.8em, 2vw, 1em);
+            color: #88aa99;
+            text-align: center;
+            z-index: 10;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <!-- Floating particles container -->
+        <div class="loading-particles" id="loadingParticles"></div>
+        
+        <div class="loading-title" data-i18n="loadingTitle">MEMORY RECONSTRUCT: RETRIEVING LOST PARTICLES</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="loading-text" id="loadingText" data-i18n="loadingText">Reconstructing images from data entropy... 0/6</div>
+    </div>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher" id="languageSwitcher">
+        <span id="currentLanguage">EN</span>
+    </div>
+    
+    <!-- CRT Overlay Effects -->
+    <div class="crt-overlay"></div>
+    <div class="crt-vignette"></div>
+    
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="system-status">
+            <div class="status-indicator"></div>
+            <span data-i18n="systemStatus">System Status: </span><span id="systemStatus">Reconstructing...</span>
+        </div>
+        <div class="particle-count" data-i18n="particleCount">Particles: <span id="particleCount">0</span></div>
+    </div>
+    
+    <!-- Main Canvas -->
+    <div class="canvas-container">
+        <canvas id="particleCanvas"></canvas>
+    </div>
+    
+    <!-- Bottom Panel -->
+    <div class="bottom-panel" id="bottomPanel">
+        <div class="artifact-info">
+            <div class="artifact-title" id="artifactTitle">Loading artifact data...</div>
+            <div class="artifact-description" id="artifactDescription">Preparing reconstruction sequence...</div>
+        </div>
+        <div class="controls">
+            <div class="progress-indicator" id="progressIndicator">
+                <!-- Progress dots will be generated by JavaScript -->
+            </div>
+            <div>
+                <button class="control-button" id="prevButton" data-i18n="prevButton">LAST ARTIFACT</button>
+                <button class="control-button" id="nextButton" data-i18n="nextButton">NEXT ARTIFACT</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Final Chapter Text Container -->
+    <div class="final-chapter-text" id="finalChapterText">
+        <div class="final-chapter-title" id="finalChapterTitle"></div>
+        <div class="final-chapter-description" id="finalChapterDescription"></div>
+        <button class="control-button" id="restartButton" style="display: none;">RESTART JOURNEY</button>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                title: "Reconstruction: Rebuilding Reality",
+                loadingTitle: "RECONSTRUCTION: REBUILDING REALITY",
+                loadingText: "Initializing particle system...",
+                systemStatus: "System Status: ",
+                particleCount: "Particles: ",
+                prevButton: "LAST ARTIFACT",
+                nextButton: "NEXT ARTIFACT",
+                reconstructing: "Reconstructing...",
+                deconstructing: "Deconstructing...",
+                reconstructionComplete: "Reconstruction Complete",
+                scenes: [
+                    {
+                        title: "The Fallen Guardian",
+                        description: "A once-majestic statue, now reduced to fragments. This ancient guardian stood watch for centuries before being destroyed in the conflict."
+                    },
+                    {
+                        title: "Concrete Remnants",
+                        description: "What was once a home now stands as a skeleton of concrete and rebar. The lives that once filled these walls have been scattered by the horrors of war."
+                    },
+                    {
+                        title: "City of Ruins",
+                        description: "An aerial view of a once-thriving metropolis, now reduced to a wasteland of rubble and ash. War does not discriminate between the innocent and the guilty."
+                    },
+                    {
+                        title: "The Price of Conflict",
+                        description: "A young soldier rests in a trench, his eyes heavy with the weight of what he has seen. War steals not just lives, but innocence and hope."
+                    },
+                    {
+                        title: "The Last Universe",
+                        description: "The world crumbles around her, reduced to rubble and ash. But between her trembling arms, she holds tightly to her only remaining universe."
+                    },
+                    {
+                        title: "Final Chapter: All Particles Dissolve",
+                        description: "We can reconstruct these images pixel by pixel a thousand times on screen. But in reality, every crumbling brick, every stopped heartbeat, is an irreversible increase in entropy. War is not a stack of data, but permanent loss."
+                    }
+                ]
+            },
+            zh: {
+                title: "重建：修复现实",
+                loadingTitle: "重建：修复现实",
+                loadingText: "初始化粒子系统中...",
+                systemStatus: "系统状态：",
+                particleCount: "粒子数量：",
+                prevButton: "上一画面",
+                nextButton: "下一画面",
+                reconstructing: "重建中...",
+                deconstructing: "解构中...",
+                reconstructionComplete: "重建完成",
+                scenes: [
+                    {
+                        title: "倒下的守护者",
+                        description: "一座曾经庄严的雕像，如今化为碎片。这位古老的守护者在冲突中被摧毁前，已经守望了数个世纪。"
+                    },
+                    {
+                        title: "混凝土残骸",
+                        description: "曾经的家园如今只剩下混凝土和钢筋的骨架。曾经填满这些墙壁的生命已被战争的恐怖驱散。"
+                    },
+                    {
+                        title: "废墟之城",
+                        description: "一座曾经繁荣的大都市的鸟瞰图，如今沦为瓦砾和灰烬的荒地。战争不会区分无辜者和有罪者。"
+                    },
+                    {
+                        title: "冲突的代价",
+                        description: "一名年轻士兵在战壕中休息，他的眼神因所见所闻而沉重。战争夺走的不仅仅是生命，还有纯真和希望。"
+                    },
+                    {
+                        title: "最后的宇宙",
+                        description: "世界在她身旁崩塌，化为瓦砾与灰烬。但在她颤抖的双臂之间，紧锁着她仅存的宇宙。"
+                    },
+                    {
+                        title: "终章：所有粒子化为灰烬飘散",
+                        description: "我们可以在屏幕上用像素重组这些画面，千万次。\n但每一块砖石的坍塌，每一次心跳的停止，都是不可逆的熵增，战争不是数据的堆叠，而是永久的丧失。"
+                    }
+                ]
+            }
+        };
+        
+        // Current language
+        let currentLanguage = 'zh';
+        
+        // Scene data (image URLs only, text content comes from translations)
+        const scenes = [
+            {
+                imageUrl: "https://p3-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/1880532206334115861~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779092185&x-signature=aRY3vSfmm5LEx89jxq6m1isMPlg%3D"
+            },
+            {
+                imageUrl: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/627269f3de3e4c92a350390292251c86~tplv-a9rns2rl98-image.image?rcl=20251119164817268AF4D3B160ED071F8A&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766134114&x-signature=bPpqspWNOJmAnC0%2BMsoOmua%2FNRc%3D"
+            },
+            {
+                imageUrl: "https://p3-doubao-search-sign.byteimg.com/tos-cn-i-be4g95zd3a/1897657563817705486~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779092185&x-signature=YXdhb%2BicuoElPy2E0bl8Qpu7Lrg%3D"
+            },
+            {
+                imageUrl: "https://p11-doubao-search-sign.byteimg.com/mosaic-legacy/10220001961aeb021008~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1779092185&x-signature=2Es5FpnfEkclRH4S951UZbSXo3U%3D"
+            },
+            {
+                imageUrl: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e76a8a743bfc4fbeb6a168fcdd320fad~tplv-a9rns2rl98-image.image?rcl=202511191636581554BACAEAEC94E695E4&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766133438&x-signature=j4OQdkUQgomdQ%2Btf4yYVHAZcjb4%3D"
+            },
+            {
+                imageUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+            }
+        ];
+
+        // Global variables
+        let canvas, ctx;
+        let particles = [];
+        let currentScene = 0;
+        let animationId;
+        let mouseX = 0, mouseY = 0;
+        let isMouseMoving = false;
+        let mouseTimeout;
+        let offscreenCanvas, offscreenCtx;
+        let isTransitioning = false;
+        let transitionProgress = 0;
+        let loadedImages = [];
+
+        // Initialize the application
+        async function init() {
+            canvas = document.getElementById('particleCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match window
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Create offscreen canvas for image processing
+            offscreenCanvas = document.createElement('canvas');
+            offscreenCtx = offscreenCanvas.getContext('2d');
+            
+            // Create loading particles
+            createLoadingParticles();
+            
+            // Initialize loading screen
+            updateLoadingScreen(0, "Reconstructing images from data entropy... 0/6");
+            
+            // Preload all images
+            await preloadImages();
+            
+            // Initialize progress indicator
+            initProgressIndicator();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize language switcher
+            initLanguageSwitcher();
+            
+            // Start with the first scene
+            updateLoadingScreen(80, "Reconstructing images from data entropy... 6/6");
+            await loadScene(currentScene);
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 1000);
+            }, 500);
+            
+            // Start animation loop
+            animate();
+        }
+        
+        // Create floating particles for loading screen
+        function createLoadingParticles() {
+            const container = document.getElementById('loadingParticles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'loading-particle';
+                
+                // Random position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.bottom = Math.random() * 20 + '%';
+                
+                // Random animation delay
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                
+                // Random animation duration
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Resize canvas to match window
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 120; // Account for top and bottom bars
+            
+            // If we have particles, update their target positions
+            if (particles.length > 0) {
+                const currentImage = loadedImages[currentScene];
+                if (currentImage) {
+                    const scale = Math.min(
+                        canvas.width / currentImage.width,
+                        canvas.height / currentImage.height
+                    );
+                    
+                    const offsetX = (canvas.width - currentImage.width * scale) / 2;
+                    const offsetY = (canvas.height - currentImage.height * scale) / 2;
+                    
+                    particles.forEach(particle => {
+                        particle.targetX = offsetX + particle.originX * scale;
+                        particle.targetY = offsetY + particle.originY * scale;
+                    });
+                }
+            }
+        }
+
+        // Preload all images
+        async function preloadImages() {
+            for (let i = 0; i < scenes.length; i++) {
+                await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => {
+                        loadedImages[i] = img;
+                        updateLoadingScreen((i / scenes.length) * 70, `Loaded image ${i + 1}/${scenes.length}`);
+                        resolve();
+                    };
+                    img.onerror = reject;
+                    img.src = scenes[i].imageUrl;
+                });
+            }
+        }
+
+        // Initialize progress indicator
+        function initProgressIndicator() {
+            const indicator = document.getElementById('progressIndicator');
+            indicator.innerHTML = '';
+            
+            for (let i = 0; i < scenes.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                if (i === currentScene) {
+                    dot.classList.add('active');
+                }
+                indicator.appendChild(dot);
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Mouse movement
+            canvas.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY - 50; // Account for top bar height
+                isMouseMoving = true;
+                
+                clearTimeout(mouseTimeout);
+                mouseTimeout = setTimeout(() => {
+                    isMouseMoving = false;
+                }, 100);
+            });
+            
+            // Previous button
+            document.getElementById('prevButton').addEventListener('click', () => {
+                if (!isTransitioning) {
+                    prevScene();
+                }
+            });
+            
+            // Next button
+            document.getElementById('nextButton').addEventListener('click', () => {
+                if (!isTransitioning) {
+                    nextScene();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    if (!isTransitioning) {
+                        nextScene();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    if (!isTransitioning) {
+                        prevScene();
+                    }
+                }
+            });
+        }
+
+        // Load a scene
+        async function loadScene(index) {
+            const scene = scenes[index];
+            const image = loadedImages[index];
+            const translations = getTranslations();
+            
+            // Update UI with translated content
+            document.getElementById('artifactTitle').textContent = translations.scenes[index].title;
+            document.getElementById('artifactDescription').textContent = translations.scenes[index].description;
+            
+            // Update progress indicator
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            // Calculate image scale and position
+            const scale = Math.min(
+                canvas.width / image.width,
+                canvas.height / image.height
+            );
+            
+            const offsetX = (canvas.width - image.width * scale) / 2;
+            const offsetY = (canvas.height - image.height * scale) / 2;
+            
+            // Set offscreen canvas size to match image
+            offscreenCanvas.width = image.width;
+            offscreenCanvas.height = image.height;
+            
+            // Draw image to offscreen canvas
+            offscreenCtx.drawImage(image, 0, 0);
+            
+            // Get image data
+            const imageData = offscreenCtx.getImageData(0, 0, image.width, image.height);
+            const data = imageData.data;
+            
+            // Create particles (every 2nd pixel to control count)
+            particles = [];
+            const pixelSkip = 2;
+            
+            for (let y = 0; y < image.height; y += pixelSkip) {
+                for (let x = 0; x < image.width; x += pixelSkip) {
+                    const index = (y * image.width + x) * 4;
+                    const r = data[index];
+                    const g = data[index + 1];
+                    const b = data[index + 2];
+                    const a = data[index + 3];
+                    
+                    // Skip transparent pixels
+                    if (a < 128) continue;
+                    
+                    // Calculate target position
+                    const targetX = offsetX + x * scale;
+                    const targetY = offsetY + y * scale;
+                    
+                    // Create particle with random initial position (exploded state)
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 300 + 100;
+                    const initialX = targetX + Math.cos(angle) * distance;
+                    const initialY = targetY + Math.sin(angle) * distance;
+                    
+                    particles.push({
+                        x: initialX,
+                        y: initialY,
+                        targetX: targetX,
+                        targetY: targetY,
+                        originX: x,
+                        originY: y,
+                        color: `rgb(${r}, ${g}, ${b})`,
+                        size: Math.random() < 0.8 ? 1 : 2, // 80% 1px, 20% 2px
+                        speed: Math.random() * 0.8 + 1.2, // Increased speed for faster reconstruction (5 seconds)
+                        originalDistance: distance,
+                        angle: angle
+                    });
+                }
+            }
+            
+            // Update particle count display
+            document.getElementById('particleCount').textContent = particles.length.toLocaleString();
+            
+            // Update system status with translated text
+            document.getElementById('systemStatus').textContent = getTranslations().reconstructing;
+            
+            // Reset transition flag
+            isTransitioning = false;
+            transitionProgress = 0;
+        }
+
+        // Transition to previous scene
+        function prevScene() {
+            // Don't allow going to previous scene from the first scene
+            if (currentScene === 0) {
+                return;
+            }
+            
+            isTransitioning = true;
+            transitionProgress = 0;
+            document.getElementById('systemStatus').textContent = getTranslations().deconstructing;
+            
+            // Explode particles
+            particles.forEach(particle => {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 200 + 100;
+                particle.targetX = particle.x + Math.cos(angle) * distance;
+                particle.targetY = particle.y + Math.sin(angle) * distance;
+                particle.speed = Math.random() * 1 + 1; // Faster speed for explosion
+            });
+            
+            // Wait for explosion to complete, then load previous scene
+            setTimeout(() => {
+                currentScene = (currentScene - 1 + scenes.length) % scenes.length;
+                loadScene(currentScene);
+            }, 1500);
+        }
+
+        // Transition to next scene
+        function nextScene() {
+            isTransitioning = true;
+            transitionProgress = 0;
+            document.getElementById('systemStatus').textContent = getTranslations().deconstructing;
+            
+            // Check if we're going to the final chapter
+            const nextSceneIndex = (currentScene + 1) % scenes.length;
+            if (nextSceneIndex === scenes.length - 1 && scenes.length === 6) {
+                // This is the final chapter - special effect
+                document.getElementById('systemStatus').textContent = "Final Chapter: Dissolving...";
+                
+                // Make particles float upward
+                particles.forEach(particle => {
+                    particle.targetX = particle.x + (Math.random() - 0.5) * 200;
+                    particle.targetY = -100; // Move off screen top
+                    particle.speed = Math.random() * 0.5 + 0.5;
+                });
+                
+                // Wait for particles to float away, then show final message
+                setTimeout(() => {
+                    currentScene = nextSceneIndex;
+                    showFinalChapter();
+                }, 3000);
+            } else {
+                // Normal scene transition
+                // Explode particles
+                particles.forEach(particle => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 200 + 100;
+                    particle.targetX = particle.x + Math.cos(angle) * distance;
+                    particle.targetY = particle.y + Math.sin(angle) * distance;
+                    particle.speed = Math.random() * 1 + 1; // Faster speed for explosion
+                });
+                
+                // Wait for explosion to complete, then load next scene
+                setTimeout(() => {
+                    currentScene = nextSceneIndex;
+                    loadScene(currentScene);
+                }, 1500);
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            let allParticlesInPlace = true;
+            
+            particles.forEach(particle => {
+                // Check if mouse is near this particle
+                const dx = mouseX - particle.x;
+                const dy = mouseY - particle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                let targetX = particle.targetX;
+                let targetY = particle.targetY;
+                
+                // If mouse is near, push particle away
+                if (isMouseMoving && distance < 100) {
+                    const force = (100 - distance) / 100;
+                    const angle = Math.atan2(dy, dx);
+                    targetX = particle.targetX + Math.cos(angle) * force * 150;
+                    targetY = particle.targetY + Math.sin(angle) * force * 150;
+                    allParticlesInPlace = false;
+                }
+                
+                // Move particle towards target - increased speed for 5-second reconstruction
+                const moveX = targetX - particle.x;
+                const moveY = targetY - particle.y;
+                const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY);
+                
+                if (moveDistance > 0.5) {
+                    particle.x += moveX * 0.05 * particle.speed; // Increased from 0.02 to 0.05 for faster movement
+                    particle.y += moveY * 0.05 * particle.speed; // Increased from 0.02 to 0.05 for faster movement
+                    allParticlesInPlace = false;
+                } else {
+                    particle.x = targetX;
+                    particle.y = targetY;
+                }
+                
+                // Draw particle
+                if (particle.opacity !== undefined) {
+                    // Special handling for final chapter particles
+                    ctx.fillStyle = particle.color + ',' + particle.opacity + ')';
+                    
+                    // Move particles upward
+                    particle.y -= particle.speed;
+                    
+                    // Mark particle as risen when it reaches the top half of the screen
+                    if (particle.y < canvas.height / 2 && !particle.hasRisen) {
+                        particle.hasRisen = true;
+                    }
+                    
+                    // Fade out as they rise
+                    particle.opacity -= 0.002; // Fade out
+                    
+                    // Reset particles that are off screen or fully transparent
+                    if (particle.y < -100 || particle.opacity <= 0) {
+                        particle.y = canvas.height + 100;
+                        particle.opacity = Math.random() * 0.8 + 0.2;
+                        particle.hasRisen = false;
+                    }
+                } else {
+                    ctx.fillStyle = particle.color;
+                }
+                ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+            });
+            
+            // Update system status if all particles are in place
+            if (allParticlesInPlace && !isTransitioning) {
+                document.getElementById('systemStatus').textContent = getTranslations().reconstructionComplete;
+            }
+            
+            // Continue animation loop
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Update loading screen
+        function updateLoadingScreen(progress, text) {
+            document.getElementById('loadingBar').style.width = `${progress}%`;
+            document.getElementById('loadingText').textContent = text;
+        }
+
+        // Initialize language switcher
+        function initLanguageSwitcher() {
+            const switcher = document.getElementById('languageSwitcher');
+            const currentLangElement = document.getElementById('currentLanguage');
+            
+            // Set initial language display
+            currentLangElement.textContent = currentLanguage.toUpperCase();
+            
+            // Add click event listener
+            switcher.addEventListener('click', () => {
+                // Toggle language
+                currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+                
+                // Update display
+                currentLangElement.textContent = currentLanguage.toUpperCase();
+                
+                // Update all translated elements
+                updateLanguage();
+            });
+        }
+        
+        // Get translations for current language
+        function getTranslations() {
+            return translations[currentLanguage];
+        }
+        
+        // Show final chapter with special effect
+        function showFinalChapter() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Hide bottom panel
+            document.getElementById('bottomPanel').style.display = 'none';
+            
+            // Update system status
+            document.getElementById('systemStatus').textContent = "Final Chapter";
+            
+            // Create floating particles that slowly fade away
+            particles = [];
+            const particleCount = 5000;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 100,
+                    size: Math.random() < 0.8 ? 1 : 2,
+                    speed: Math.random() * 0.5 + 0.5,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    color: `rgba(${Math.floor(Math.random() * 100 + 50)}, ${Math.floor(Math.random() * 100 + 50)}, ${Math.floor(Math.random() * 100 + 50)}`,
+                    hasRisen: false
+                });
+            }
+            
+            // Update particle count display
+            document.getElementById('particleCount').textContent = particles.length.toLocaleString();
+            
+            // Disable transition flag
+            isTransitioning = false;
+            
+            // Prepare final chapter text but don't show it yet
+            const trans = getTranslations();
+            document.getElementById('finalChapterTitle').textContent = trans.scenes[currentScene].title;
+            document.getElementById('finalChapterDescription').textContent = trans.scenes[currentScene].description;
+            
+            // Show final chapter text after an even shorter delay
+            // This ensures the text always appears regardless of particle behavior
+            setTimeout(() => {
+                document.getElementById('finalChapterText').style.opacity = '1';
+                document.getElementById('restartButton').style.display = 'inline-block';
+                
+                // Add click event listener to restart button
+                document.getElementById('restartButton').onclick = function() {
+                    // Reset to first scene
+                    currentScene = 0;
+                    
+                    // Show bottom panel again
+                    document.getElementById('bottomPanel').style.display = 'block';
+                    
+                    // Hide final chapter text
+                    document.getElementById('finalChapterText').style.opacity = '0';
+                    document.getElementById('restartButton').style.display = 'none';
+                    
+                    // Load first scene
+                    loadScene(currentScene);
+                };
+            }, 1500);
+        }
+        
+        // Update all elements with translations
+        function updateLanguage() {
+            const trans = getTranslations();
+            
+            // Update title
+            document.querySelector('title[data-i18n="title"]').textContent = trans.title;
+            
+            // Update loading screen (if visible)
+            const loadingTitle = document.querySelector('[data-i18n="loadingTitle"]');
+            if (loadingTitle) loadingTitle.textContent = trans.loadingTitle;
+            
+            const loadingText = document.querySelector('[data-i18n="loadingText"]');
+            if (loadingText) loadingText.textContent = trans.loadingText;
+            
+            // Update top bar
+            document.querySelector('[data-i18n="systemStatus"]').textContent = trans.systemStatus;
+            document.querySelector('[data-i18n="particleCount"]').textContent = trans.particleCount;
+            
+            // Update buttons
+            document.querySelector('[data-i18n="prevButton"]').textContent = trans.prevButton;
+            document.querySelector('[data-i18n="nextButton"]').textContent = trans.nextButton;
+            
+            // Update system status
+            const systemStatus = document.getElementById('systemStatus');
+            if (systemStatus.textContent === "Reconstructing..." || systemStatus.textContent === "重建中...") {
+                systemStatus.textContent = trans.reconstructing;
+            } else if (systemStatus.textContent === "Deconstructing..." || systemStatus.textContent === "解构中...") {
+                systemStatus.textContent = trans.deconstructing;
+            } else if (systemStatus.textContent === "Reconstruction Complete" || systemStatus.textContent === "重建完成") {
+                systemStatus.textContent = trans.reconstructionComplete;
+            }
+            
+            // Update current scene info
+            if (particles.length > 0 && currentScene < trans.scenes.length) {
+                document.getElementById('artifactTitle').textContent = trans.scenes[currentScene].title;
+                document.getElementById('artifactDescription').textContent = trans.scenes[currentScene].description;
+            }
+        }
+        
+        // Start the application
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
